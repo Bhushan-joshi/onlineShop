@@ -6,6 +6,11 @@
     <%- include('../includes/navigation.ejs') %>
 
     <main>
+        <% if (Message.length>0){ %>
+            <div class="message">
+                <p class="success-message"><%= Message %></p>
+            </div>
+            <% } %>
         <% if (prods.length > 0) { %>
         <div class="grid">
             <% for (let product of prods) { %>

@@ -1,13 +1,18 @@
 <%- include('../includes/head.ejs') %>
-    <link rel="stylesheet" href="/css/forms.css">
-    <link rel="stylesheet" href="/css/product.css">
+<link rel="stylesheet" href="/css/forms.css">
+<link rel="stylesheet" href="/css/product.css">
 </head>
 
 <body>
-   <%- include('../includes/navigation.ejs') %>
+    <%- include('../includes/navigation.ejs') %>
 
     <main>
         <form class="product-form" action="/auth/signup" method="POST">
+            <% if (Message.length>0){ %>
+            <div class="message">
+                <p class="error-message"><%= Message %></p>
+            </div>
+            <% } %>
             <div class="form-control">
                 <label for="email">Email</label>
                 <input type="email" name="email" id="email">
@@ -23,4 +28,4 @@
             <button class="btn" type="submit">Signup</button>
         </form>
     </main>
-<%- include('../includes/end.ejs') %>
+    <%- include('../includes/end.ejs') %>

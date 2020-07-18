@@ -5,7 +5,7 @@ exports.getSignup = (req, res, next) => {
     res.render('auth/signup', {
         path: 'auth/signup',
         title: 'Signup',
-        isAuthenticted: req.session.isLoggedin
+        Message: req.flash('signupError')
     });
 };
 
@@ -17,6 +17,7 @@ exports.postSignup = (req, res, next) => {
         crypto.hash(password, salt).then(hash_password => {
             User.findOne({ Email: email }).then(usr => {
                 if (usr) {
+                    req.flash('signupError', 'User exist with Email. Try with another Email!');
                     return res.redirect('/auth/signup');
                 } else {
                     const newUser = new User({
@@ -45,7 +46,7 @@ exports.getLogin = (req, res, next) => {
     res.render('auth/login', {
         path: 'auth/login',
         title: 'Login',
-        isAuthenticted: req.session.isLoggedin
+        Message: req.flash('loginError')
     });
 };
 
@@ -53,15 +54,22 @@ exports.postLogin = (req, res, next) => {
     const password = req.body.password;
     User.findOne({ Email: req.body.email }).then(user => {
         if (!user) {
+            req.flash('loginError', 'Invalid Email or Password!');
             return res.redirect('/auth/login');
         }
         crypto.compare(password, user.Password).then(domatch => {
-            req.session.user = user;
-            req.session.isLoggedin = true;
-            req.session.save(err=>{
-                if(err){console.log(err);}
-                res.redirect('/');
-            });
+            if (domatch) {
+                req.session.user = user;
+                req.session.isLoggedin = true;
+                req.session.save(err => {
+                    if (err) { console.log(err); }
+                    req.flash('successlogin', 'Login Successfully!');
+                    res.redirect('/');
+                });
+            } else {
+                req.flash('loginError', 'Invalid Email or Password!');
+                res.redirect('/auth/login');
+            }
         }).catch(err => {
             if (err) { console.log(err); }
         });

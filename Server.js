@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const mongodbsession = require('connect-mongodb-session')(session);
+const flash = require('connect-flash');
+
 
 //user models
 const ShopRoute = require('./routers/Shop');
@@ -45,6 +47,12 @@ app.use((req, res, next) => {
         next();
     });
 });
+
+app.use((req, res, next) => {
+    res.locals.isAuthenticted = req.session.isLoggedin;
+    next();
+});
+app.use(flash());
 //Routes//
 app.use('/auth', authRoute);
 app.use(ShopRoute);
