@@ -7,7 +7,8 @@ exports.getIndex = (req, res, next) => {
         res.render('shop/index', {
             path: '/',
             title: 'Shop',
-            prods: product
+            prods: product,
+        isAuthenticted:req.session.isLoggedin
         });
     });
 };
@@ -17,12 +18,16 @@ exports.getDetails=(req,res,next)=>{
         res.render('shop/product-detail', {
             path: '',
             title: 'Product-detail',
-            product: product
+            product: product,
+        isAuthenticted:req.session.isLoggedin
         });
     });
 };
 
 exports.getCart = (req, res, next) => {
+    if (!req.session.isLoggedin) {
+        return res.redirect('/auth/login');
+    }
     const totalarr = [];
     let total = 0;
     req.user
@@ -40,13 +45,17 @@ exports.getCart = (req, res, next) => {
                 path: '/cart',
                 title: 'Your Cart',
                 products: products,
-                total:total
+                total:total,
+        isAuthenticted:req.session.isLoggedin
             });
         })
         .catch(err => console.log(err));
 };
 
 exports.postCart = (req, res, next) => {
+    if (!req.session.isLoggedin) {
+        return res.redirect('/auth/login');
+    }
     const prodid = req.body.productId;
     Product.findById(prodid).then(productid => {
         return req.user.addToCart(productid);
@@ -60,6 +69,9 @@ exports.postCart = (req, res, next) => {
 };
 
 exports.deleteCartItem = (req, res, next) => {
+    if (!req.session.isLoggedin) {
+        return res.redirect('/auth/login');
+    }
     const productid = req.body.productId;
     req.user.removeCartItem(productid).then(result => {
         res.redirect('/cart');
@@ -68,16 +80,23 @@ exports.deleteCartItem = (req, res, next) => {
     });
 };
 exports.getOrder = (req, res, next) => {
+    if (!req.session.isLoggedin) {
+        return res.redirect('/auth/login');
+    }
     Order.find({ 'userid.id': req.user._id }).then(orders => {
         res.render('shop/orders', {
             path: '/orders',
             title: 'Your Orders',
-            orders: orders
+            orders: orders,
+        isAuthenticted:req.session.isLoggedin
         });
     });
 
 };
 exports.postOrder = (req, res, next) => {
+    if (!req.session.isLoggedin) {
+        return res.redirect('/auth/login');
+    }
     req.user
         .populate('Cart.items.productid')
         .execPopulate()

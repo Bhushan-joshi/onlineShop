@@ -1,43 +1,63 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const session = require('express-session');
+const mongodbsession = require('connect-mongodb-session')(session);
+
 //user models
 const ShopRoute = require('./routers/Shop');
 const AdminRoute = require('./routers/admin');
-const User=require('./models/User');
+const authRoute = require('./routers/auth');
+const User = require('./models/User');
 
+const MONGOURL = "mongodb://localhost:27017/Shop?readPreference=primary&appname=MongoDB%20Compass&ssl=false";
 const app = express();
+
+const store = new mongodbsession({
+    uri: MONGOURL,
+    conllection: 'session'
+});
+
+
 
 app.set('view engine', 'ejs');
 
 app.use(express.static(__dirname + '/public/'));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({
+    secret: "this is most secret thing",
+    resave: false,
+    saveUninitialized: false,
+    store: store,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 7
+    }
+}));
 
-app.use((req,res,next)=>{
-    User.findById({_id:'5f05c27fe7424c8ccaf41e39'}).then(User=>{
-        req.user= User;
+
+//setting up default User
+app.use((req, res, next) => {
+    if (!req.session.user) {
+        return next();
+    }
+    User.findById({ _id: req.session.user._id }).then(user => {
+        req.user = user;
         next();
     });
 });
 //Routes//
+app.use('/auth', authRoute);
 app.use(ShopRoute);
 app.use('/admin', AdminRoute);
+
 //404 Page
+
 app.use((req, res, next) => {
-    res.render('404', { path: null, title: 'pageNotFound' });
+    res.render('404', { path: null, title: 'pageNotFound', isAuthenticted: req.session.isLoggedin });
 });
-//creating a user
-// const user=new User({
-//     Name: 'Bhushan',
-//     Password: 'test123',
-//     Cart:[],
-// });
-// user.save();
-
-
 
 //Database connection
-mongoose.connect("mongodb://localhost:27017/Shop?readPreference=primary&appname=MongoDB%20Compass&ssl=false", { useNewUrlParser: true });
+mongoose.connect(MONGOURL, { useNewUrlParser: true });
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
