@@ -7,24 +7,22 @@
     <%- include('../includes/navigation.ejs') %>
 
     <main>
-        <form class="product-form" action="/auth/login" method="POST">
+        <form class="product-form" action="/auth/new-password" method="POST">
             <% if (Message.length>0){ %>
             <div class="message">
                 <p class="error-message"><%= Message %></p>
             </div>
             <% } %>
             <div class="form-control">
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email">
-            </div>
-            <div class="form-control">
                 <label for="password">Password</label>
                 <input type="password" name="password" id="password">
             </div>
-            <button class="btn" type="submit">Login</button>
-            <div>
-                <a href="/auth/reset-password">Reset Password</a>
+            <div class="form-control">
+                <label for="conpass">Confirm Password</label>
+                <input type="conpass" name="conpass" id="conpass">
             </div>
+            <input type="hidden" name="email" value="<%= email %>">
+            <button class="btn" type="submit">Reset</button>
         </form>
     </main>
     <%- include('../includes/end.ejs') %>

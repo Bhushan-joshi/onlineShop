@@ -10,7 +10,9 @@ const UserSchema = new Schema({
             productid: { type: Schema.Types.ObjectId ,ref:'Product'  },
             quantity: { type: Number, required:true},
         }]
-    }
+    },
+    Token:String,
+    TokenExpireDate:Date,
 });
 
 UserSchema.methods.addToCart=function(prodid){

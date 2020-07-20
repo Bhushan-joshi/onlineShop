@@ -82,7 +82,6 @@ exports.getOrder = (req, res, next) => {
 
 };
 exports.postOrder = (req, res, next) => {
-   
     req.user
         .populate('Cart.items.productid')
         .execPopulate()
@@ -92,7 +91,7 @@ exports.postOrder = (req, res, next) => {
             });
             const order = new Order({
                 userid: {
-                    name: req.user.Name,
+                    name: req.user.Email,
                     id: req.user
                 },
                 products: items
