@@ -15,15 +15,15 @@
             <% } %>
             <div class="form-control">
                 <label for="email">Email</label>
-                <input type="email" name="email" id="email">
+                <input type="email" name="email" id="email" value="<%= olddata.email %>">
             </div>
             <div class="form-control">
                 <label for="password">Password</label>
-                <input type="password" name="password" id="password">
+                <input type="password" name="password" id="password" value="<%= olddata.password%>">
             </div>
             <div class="form-control">
                 <label for="compassword">Confirm Password</label>
-                <input type="password" name="compassword" id="compassword">
+                <input type="password" name="compassword" id="compassword" value="<%=olddata.compassword %>">
             </div>
             <button class="btn" type="submit">Signup</button>
         </form>
