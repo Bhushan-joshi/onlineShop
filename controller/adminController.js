@@ -13,9 +13,14 @@ exports.getAddproduct = (req, res, next) => {
 exports.postAddproduct = (req, res, next) => {
     
     const title = req.body.title;
-    const imageURL = req.body.imageUrl;
+    const image = req.file;
     const price = req.body.price;
     const description = req.body.description;
+    if(!image){
+        return res.redirect('/admin/add-product');
+    }
+    const imageURL=req.file.path;
+
     const product = new Product({
         Title:title,
         Price: price,
