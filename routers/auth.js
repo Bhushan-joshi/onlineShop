@@ -17,8 +17,7 @@ Router.get('/signup', authController.getSignup);
 Router.post('/signup',
 [//validating data
     check('email').isEmail([{ domain_specific_validation: false }]).withMessage('Invalid Email !'),
-    body('password').isAlphanumeric().isLength({ min: 8 }).withMessage('Password must be of 8 Characters long and Alphanumeric!')
-        .matches('^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$.!%*#?&])[A-Za-z\d@$.!%*#?&]{8,}$').withMessage('Password should not be empty, minimum eight characters, at least one letter, one number and one special character'),
+    body('password').isAlphanumeric().isLength({ min: 8 }).withMessage('Password must be of 8 Characters long and Alphanumeric!'),
     body('compassword').custom((value, { req }) => {
         if (value !== req.body.password) {
             throw new Error('Password fields must match');

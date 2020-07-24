@@ -1,5 +1,8 @@
-const Product = require('../models/product');
+const fs = require('fs');
+const path = require('path');
+const pdfDocument = require('pdfkit');
 
+const Product = require('../models/product');
 const Order = require('../models/Order');
 
 exports.getIndex = (req, res, next) => {
@@ -8,13 +11,13 @@ exports.getIndex = (req, res, next) => {
             path: '/',
             title: 'Shop',
             prods: product,
-            Message:req.flash('successlogin')
+            Message: req.flash('successlogin')
         });
     });
 };
 
-exports.getDetails=(req,res,next)=>{
-    Product.findById(req.params.productid).then(product=>{
+exports.getDetails = (req, res, next) => {
+    Product.findById(req.params.productid).then(product => {
         res.render('shop/product-detail', {
             path: '',
             title: 'Product-detail',
@@ -41,14 +44,14 @@ exports.getCart = (req, res, next) => {
                 path: '/cart',
                 title: 'Your Cart',
                 products: products,
-                total:total,
+                total: total,
             });
         })
         .catch(err => console.log(err));
 };
 
 exports.postCart = (req, res, next) => {
-    
+
     const prodid = req.body.productId;
     Product.findById(prodid).then(productid => {
         return req.user.addToCart(productid);
@@ -62,7 +65,7 @@ exports.postCart = (req, res, next) => {
 };
 
 exports.deleteCartItem = (req, res, next) => {
-    
+
     const productid = req.body.productId;
     req.user.removeCartItem(productid).then(result => {
         res.redirect('/cart');
@@ -71,7 +74,7 @@ exports.deleteCartItem = (req, res, next) => {
     });
 };
 exports.getOrder = (req, res, next) => {
-    
+
     Order.find({ 'userid.id': req.user._id }).then(orders => {
         res.render('shop/orders', {
             path: '/orders',
@@ -104,4 +107,59 @@ exports.postOrder = (req, res, next) => {
         }).catch((err) => {
             console.log(err);
         });
+};
+
+
+exports.getInvoice = (req, res, next) => {
+    const invoiceID = req.params.orderid;
+    Order.findById(invoiceID).then((order) => {
+        if (!order) {
+            return next(new Error(''));
+        }
+        if (order.userid.id.toString() !== req.user._id.toString()) {
+            return next(new Error(''));
+        }
+        const invoiceName = 'invoice-' + invoiceID + '.pdf';
+        const invoicePath = path.join(__dirname, '../data', 'Invoices', invoiceName);
+
+
+        const pdfDoc=new pdfDocument();
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline;filename="' + invoiceName + '"');
+        pdfDoc.pipe(fs.createWriteStream(invoicePath));
+        pdfDoc.pipe(res);
+        pdfDoc.fontSize(30).text('Invoice',{underline:true,});
+        pdfDoc.fontSize(22).text(order.userid.name +'\n' + "ODID = "+ invoiceID);
+        pdfDoc.text('---------------------------------------------');
+        let total=0;
+        order.products.forEach((prod,index)=>{
+            total =total+ prod.product.Price*prod.quantity;
+            pdfDoc.fontSize(18).text(
+                index + ' )  '+prod.product.Title+ ' - '+ prod.product.Price +' * '+prod.quantity
+            );
+        });
+        pdfDoc.text('total price ='+total+ '\n');
+        pdfDoc.end();
+
+        /* sending all data at same time this is not good way of 
+        sending data */
+        // fs.readFile(invoicePath,(error,data)=>{
+        //     if(error){
+        //         return next(error);
+        //     }
+        //     res.setHeader('Content-Type','application/pdf');
+        //     res.setHeader('Content-Disposition','inline;filename="'+invoiceName+'"');
+        //     res.send(data);
+        // });
+
+        /* we sends data in form of chuncks which is good way */
+        // const data = fs.createReadStream(invoicePath);
+        // res.setHeader('Content-Type', 'application/pdf');
+        // res.setHeader('Content-Disposition', 'inline;filename="' + invoiceName + '"');
+        // data.pipe(res);
+
+    }).catch((err) => {
+        return next(new Error(''));
+    });
+
 };

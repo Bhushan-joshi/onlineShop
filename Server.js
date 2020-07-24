@@ -85,6 +85,8 @@ app.use('/admin', AdminRoute);
 
 app.use(err.get404);
 
+app.use(err.get500);
+
 //Database connection
 mongoose.connect(MONGOURL, { useNewUrlParser: true });
 var db = mongoose.connection;
