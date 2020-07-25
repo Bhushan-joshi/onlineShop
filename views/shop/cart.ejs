@@ -13,7 +13,7 @@
                 <h3>Quantity: <%= p.quantity %></h3>
                 <h3>Price:<%=p.productid.Price * p.quantity%></h3>
                 <form action="/cart-delete-item" method="POST">
-                    <input type="hidden" value="<%= p.productid._id %>" name="productId">
+                    <input type="hidden" value="<%=p.productid._id %>" name="productId">
                     <button class="btn danger" type="submit">Delete</button>
                 </form>
             </li>
@@ -29,9 +29,7 @@
             </li>
         </ul>
         <div class="centered">
-            <form action="/create-order" method="POST">
-                <button type="submit" class="btn">Order Now!</button>
-            </form>
+            <a href="/checkout" class="btn">Order Now !</a>
         </div>
 
         <% } else { %>

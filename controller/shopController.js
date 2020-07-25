@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const pdfDocument = require('pdfkit');
+const Key=require('../StripeKey');
+const stripe=require('stripe')(Key);//add your private stripe key :)
 
 const Product = require('../models/product');
 const Order = require('../models/Order');
@@ -27,7 +29,7 @@ exports.getDetails = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-    const totalarr = [];
+
     let total = 0;
     req.user
         .populate('Cart.items.productid')
@@ -35,11 +37,8 @@ exports.getCart = (req, res, next) => {
         .then(user => {
             const products = user.Cart.items;
             user.Cart.items.forEach(item => {
-                totalarr.push(item.quantity * item.productid.Price);
+                total=total+item.quantity * item.productid.Price;
             });
-            for (let i = 0; i < totalarr.length; i++) {
-                total = total + totalarr[i];
-            }
             res.render('shop/cart', {
                 path: '/cart',
                 title: 'Your Cart',
@@ -162,4 +161,48 @@ exports.getInvoice = (req, res, next) => {
         return next(new Error(''));
     });
 
+};
+
+
+
+exports.getCheckout=(req,res,next)=>{
+    let total = 0;
+    let products;
+    req.user
+        .populate('Cart.items.productid')
+        .execPopulate()
+        .then(user => {
+            products = user.Cart.items;
+            user.Cart.items.forEach(item => {
+                total=total+item.quantity * item.productid.Price;
+            });
+            return stripe.checkout.sessions.create({
+                payment_method_types:['card'],
+                line_items:products.map(p=>{
+                    return {
+                        name:p.productid.Title,
+                        description:p.productid.Description,
+                        amount:p.productid.Price *100,
+                        currency:'INR',
+                        quantity:p.quantity,
+                    };
+                }),
+                success_url:req.protocol+'://'+req.get('host')+'/checkout/success',
+                cancel_url:req.protocol+'://'+req.get('host')+'/checkout/cancel'
+            });
+            
+        }).then(session=>{
+            // console.log(session)
+            res.render('shop/checkout', {
+                path: '/cart',
+                title: 'checkout',
+                products: products,
+                total: total,
+                sessionid:session
+            });
+        })
+        .catch(err => {
+            // return next(err);
+            console.log(err);
+        });
 };
